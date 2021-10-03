@@ -8,7 +8,7 @@ We're tackling task 1 from the competition.
 Our method is implemented in `./task01_predictmodality/method/method.py`.
 
 
-## Submission Workflow
+## Submission workflow
 
 To generate a submission, execute the following:
 
