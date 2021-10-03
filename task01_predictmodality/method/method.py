@@ -8,17 +8,17 @@ from sklearn.linear_model import LinearRegression
 
 def main(input_train_mod1, input_train_mod2, input_test_mod1, input_train):
     # Do PCA on the input data
-    logging.info('Performing dimensionality reduction on modality 1 values...')
+    logging.info("Performing dimensionality reduction on modality 1 values...")
     embedder_mod1 = TruncatedSVD(n_components=50)
     mod1_pca = embedder_mod1.fit_transform(input_train.X)
 
-    logging.info('Performing dimensionality reduction on modality 2 values...')
+    logging.info("Performing dimensionality reduction on modality 2 values...")
     embedder_mod2 = TruncatedSVD(n_components=50)
     mod2_pca = embedder_mod2.fit_transform(input_train_mod2.X)
 
     # split dimred back up
-    X_train = mod1_pca[input_train.obs['group'] == 'train']
-    X_test = mod1_pca[input_train.obs['group'] == 'test']
+    X_train = mod1_pca[input_train.obs["group"] == "train"]
+    X_test = mod1_pca[input_train.obs["group"] == "test"]
     y_train = mod2_pca
 
     assert len(X_train) + len(X_test) == len(mod1_pca)
@@ -29,7 +29,7 @@ def main(input_train_mod1, input_train_mod2, input_test_mod1, input_train):
     # Make sure to use `toarray()` because the output might
     # be sparse and `KNeighborsRegressor` cannot handle it.
 
-    logging.info('Running Linear regression...')
+    logging.info("Running Linear regression...")
 
     reg = LinearRegression()
 
