@@ -10,6 +10,10 @@ functionality:
       email: kim.jablonski@bsse.ethz.ch
       roles: [ author, maintainer ]
       props: { github: kpj, orcid: "0000-0002-4166-4343" }
+    - name: Pedro Falé Ferreira
+      email: pedro.ferreira@bsse.ethz.ch
+      roles: [ author, maintainer ]
+      props: { github: pedrofale, orcid: "0000-0003-0559-6125" }      
 
   # parameters
   arguments:
