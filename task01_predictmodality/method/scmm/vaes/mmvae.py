@@ -66,19 +66,36 @@ class MMVAE(nn.Module):
         with torch.no_grad():
             qz_xs, _, zss = self.forward(data, K=K)
             pz = self.pz(*self.pz_params)
-            zss = [pz.sample(torch.Size([K, data[0].size(0)])).view(-1, pz.batch_shape[-1]),
-                   *[zs.view(-1, zs.size(-1)) for zs in zss]]
+            zss = [
+                pz.sample(torch.Size([K, data[0].size(0)])).view(
+                    -1, pz.batch_shape[-1]
+                ),
+                *[zs.view(-1, zs.size(-1)) for zs in zss],
+            ]
             zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss)]
             kls_df = tensors_to_df(
-                [*[kl_divergence(qz_x, pz).cpu().numpy() for qz_x in qz_xs],
-                 *[0.5 * (kl_divergence(p, q) + kl_divergence(q, p)).cpu().numpy()
-                   for p, q in combinations(qz_xs, 2)]],
-                head='KL',
-                keys=[*[r'KL$(q(z|x_{})\,||\,p(z))$'.format(i) for i in range(len(qz_xs))],
-                      *[r'J$(q(z|x_{})\,||\,q(z|x_{}))$'.format(i, j)
-                        for i, j in combinations(range(len(qz_xs)), 2)]],
-                ax_names=['Dimensions', r'KL$(q\,||\,p)$']
+                [
+                    *[kl_divergence(qz_x, pz).cpu().numpy() for qz_x in qz_xs],
+                    *[
+                        0.5 * (kl_divergence(p, q) + kl_divergence(q, p)).cpu().numpy()
+                        for p, q in combinations(qz_xs, 2)
+                    ],
+                ],
+                head="KL",
+                keys=[
+                    *[
+                        r"KL$(q(z|x_{})\,||\,p(z))$".format(i)
+                        for i in range(len(qz_xs))
+                    ],
+                    *[
+                        r"J$(q(z|x_{})\,||\,q(z|x_{}))$".format(i, j)
+                        for i, j in combinations(range(len(qz_xs)), 2)
+                    ],
+                ],
+                ax_names=["Dimensions", r"KL$(q\,||\,p)$"],
             )
-        return embed_umap(torch.cat(zss, 0).cpu().numpy()), \
-            torch.cat(zsl, 0).cpu().numpy(), \
-            kls_df
+        return (
+            embed_umap(torch.cat(zss, 0).cpu().numpy()),
+            torch.cat(zsl, 0).cpu().numpy(),
+            kls_df,
+        )

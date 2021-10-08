@@ -66,15 +66,19 @@ class VAE(nn.Module):
         with torch.no_grad():
             qz_x, _, zs = self.forward(data, K=K)
             pz = self.pz(*self.pz_params)
-            zss = [pz.sample(torch.Size([K, data.size(0)])).view(-1, pz.batch_shape[-1]),
-                   zs.view(-1, zs.size(-1))]
+            zss = [
+                pz.sample(torch.Size([K, data.size(0)])).view(-1, pz.batch_shape[-1]),
+                zs.view(-1, zs.size(-1)),
+            ]
             zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss)]
             kls_df = tensors_to_df(
                 [kl_divergence(qz_x, pz).cpu().numpy()],
-                head='KL',
-                keys=[r'KL$(q(z|x)\,||\,p(z))$'],
-                ax_names=['Dimensions', r'KL$(q\,||\,p)$']
+                head="KL",
+                keys=[r"KL$(q(z|x)\,||\,p(z))$"],
+                ax_names=["Dimensions", r"KL$(q\,||\,p)$"],
             )
-        return embed_umap(torch.cat(zss, 0).cpu().numpy()), \
-            torch.cat(zsl, 0).cpu().numpy(), \
-            kls_df
+        return (
+            embed_umap(torch.cat(zss, 0).cpu().numpy()),
+            torch.cat(zsl, 0).cpu().numpy(),
+            kls_df,
+        )

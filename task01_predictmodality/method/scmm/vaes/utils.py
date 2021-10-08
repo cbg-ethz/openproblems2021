@@ -11,7 +11,7 @@ import torch.nn.functional as F
 # Classes
 class Constants(object):
     eta = 1e-6
-    eps =1e-8
+    eps = 1e-8
     log2 = math.log(2)
     log2pi = math.log(2 * math.pi)
     logceilc = 88  # largest cuda v s.t. exp(v) < inf
@@ -47,10 +47,11 @@ class Timer:
         self.end = time.time()
         self.elapsed = self.end - self.begin
         self.elapsedH = time.gmtime(self.elapsed)
-        print('====> [{}] Time: {:7.3f}s or {}'
-              .format(self.name,
-                      self.elapsed,
-                      time.strftime("%H:%M:%S", self.elapsedH)))
+        print(
+            "====> [{}] Time: {:7.3f}s or {}".format(
+                self.name, self.elapsed, time.strftime("%H:%M:%S", self.elapsedH)
+            )
+        )
 
 
 # Functions
@@ -59,7 +60,7 @@ def save_vars(vs, filepath):
     Saves variables to the given filepath in a safe manner.
     """
     if os.path.exists(filepath):
-        shutil.copyfile(filepath, '{}.old'.format(filepath))
+        shutil.copyfile(filepath, "{}.old".format(filepath))
     torch.save(vs, filepath)
 
 
@@ -69,7 +70,7 @@ def save_model(model, filepath):
     `model.load_state_dict(torch.load('path-to-saved-model'))`.
     """
     save_vars(model.state_dict(), filepath)
-    #if hasattr(model, 'vaes'):
+    # if hasattr(model, 'vaes'):
     #    for vae in model.vaes:
     #        fdir, fext = os.path.splitext(filepath)
     #        save_vars(vae.state_dict(), fdir + '_' + vae.modelName + fext)
@@ -79,9 +80,9 @@ def is_multidata(dataB):
     return isinstance(dataB, list) or isinstance(dataB, tuple)
 
 
-def unpack_data(dataB, device='cuda'):
+def unpack_data(dataB, device="cuda"):
     # dataB :: (Tensor, Idx) | [(Tensor, Idx)]
-    """ Unpacks the data batch object in an appropriate manner to extract data """
+    """Unpacks the data batch object in an appropriate manner to extract data"""
     if is_multidata(dataB):
         if torch.is_tensor(dataB[0]):
             if torch.is_tensor(dataB[1]):
@@ -89,16 +90,26 @@ def unpack_data(dataB, device='cuda'):
             elif is_multidata(dataB[1]):
                 return dataB[0].to(device), dataB[1][0].to(device)  # cubISft
             else:
-                raise RuntimeError('Invalid data format {} -- check your dataloader!'.format(type(dataB[1])))
+                raise RuntimeError(
+                    "Invalid data format {} -- check your dataloader!".format(
+                        type(dataB[1])
+                    )
+                )
 
         elif is_multidata(dataB[0]):
             return [d.to(device) for d in list(zip(*dataB))[0]]  # mnist-svhn, cubIS
         else:
-            raise RuntimeError('Invalid data format {} -- check your dataloader!'.format(type(dataB[0])))
+            raise RuntimeError(
+                "Invalid data format {} -- check your dataloader!".format(
+                    type(dataB[0])
+                )
+            )
     elif torch.is_tensor(dataB):
         return dataB.to(device)
     else:
-        raise RuntimeError('Invalid data format {} -- check your dataloader!'.format(type(dataB)))
+        raise RuntimeError(
+            "Invalid data format {} -- check your dataloader!".format(type(dataB))
+        )
 
 
 def get_mean(d, K=100):
@@ -126,43 +137,68 @@ def kl_divergence(d1, d2, K=100):
         samples = d1.rsample(torch.Size([K]))
         return (d1.log_prob(samples) - d2.log_prob(samples)).mean(0)
 
+
 def vade_kld_uni(model, zs):
     n_centroids = model.params.n_centroids
-    gamma, lgamma, mu_c, var_c, pi = model.get_gamma(zs) #pi, var_cは get_gammaでConstants.eta足してる
-    
-    mu, var = model._qz_x_params 
+    gamma, lgamma, mu_c, var_c, pi = model.get_gamma(
+        zs
+    )  # pi, var_cは get_gammaでConstants.eta足してる
+
+    mu, var = model._qz_x_params
     mu_expand = mu.unsqueeze(2).expand(mu.size(0), mu.size(1), n_centroids)
-    var_expand = var.unsqueeze(2).expand(var.size(0), var.size(1), n_centroids) 
-    lpz_c = -0.5*torch.sum(gamma*torch.sum(math.log(2*math.pi) + \
-                                           torch.log(var_c) + \
-                                           var_expand/var_c + \
-                                           (mu_expand-mu_c)**2/var_c, dim=1), dim=1) # log p(z|c)
-    lpc = torch.sum(gamma*torch.log(pi), dim=1) # log p(c) #log(pi)が-inf怪しい
-    lqz_x = -0.5*torch.sum(1+torch.log(var)+math.log(2*math.pi), dim=1) #see VaDE paper # log q(z|x)
-    lqc_x = torch.sum(gamma*(lgamma), dim=1) # log q(c|x)
-    
-    kld = -lpz_c - lpc + lqz_x + lqc_x 
-    
+    var_expand = var.unsqueeze(2).expand(var.size(0), var.size(1), n_centroids)
+    lpz_c = -0.5 * torch.sum(
+        gamma
+        * torch.sum(
+            math.log(2 * math.pi)
+            + torch.log(var_c)
+            + var_expand / var_c
+            + (mu_expand - mu_c) ** 2 / var_c,
+            dim=1,
+        ),
+        dim=1,
+    )  # log p(z|c)
+    lpc = torch.sum(gamma * torch.log(pi), dim=1)  # log p(c) #log(pi)が-inf怪しい
+    lqz_x = -0.5 * torch.sum(
+        1 + torch.log(var) + math.log(2 * math.pi), dim=1
+    )  # see VaDE paper # log q(z|x)
+    lqc_x = torch.sum(gamma * (lgamma), dim=1)  # log q(c|x)
+
+    kld = -lpz_c - lpc + lqz_x + lqc_x
+
     return kld
+
 
 def vade_kld(model, zs, r):
     n_centroids = model.params.n_centroids
-    gamma, lgamma, mu_c, var_c, pi = model.get_gamma(zs) #pi, var_cは get_gammaでConstants.eta足してる
-    
-    mu, var = model.vaes[r]._qz_x_params 
+    gamma, lgamma, mu_c, var_c, pi = model.get_gamma(
+        zs
+    )  # pi, var_cは get_gammaでConstants.eta足してる
+
+    mu, var = model.vaes[r]._qz_x_params
     mu_expand = mu.unsqueeze(2).expand(mu.size(0), mu.size(1), n_centroids)
-    var_expand = var.unsqueeze(2).expand(var.size(0), var.size(1), n_centroids) 
-    lpz_c = -0.5*torch.sum(gamma*torch.sum(math.log(2*math.pi) + \
-                                           torch.log(var_c) + \
-                                           var_expand/var_c + \
-                                           (mu_expand-mu_c)**2/var_c, dim=1), dim=1) # log p(z|c)
-    lpc = torch.sum(gamma*torch.log(pi), dim=1) # log p(c) #log(pi)が-inf怪しい
-    lqz_x = -0.5*torch.sum(1+torch.log(var)+math.log(2*math.pi), dim=1) #see VaDE paper # log q(z|x)
-    lqc_x = torch.sum(gamma*(lgamma), dim=1) # log q(c|x)
-    
-    kld = -lpz_c - lpc + lqz_x + lqc_x 
-    
+    var_expand = var.unsqueeze(2).expand(var.size(0), var.size(1), n_centroids)
+    lpz_c = -0.5 * torch.sum(
+        gamma
+        * torch.sum(
+            math.log(2 * math.pi)
+            + torch.log(var_c)
+            + var_expand / var_c
+            + (mu_expand - mu_c) ** 2 / var_c,
+            dim=1,
+        ),
+        dim=1,
+    )  # log p(z|c)
+    lpc = torch.sum(gamma * torch.log(pi), dim=1)  # log p(c) #log(pi)が-inf怪しい
+    lqz_x = -0.5 * torch.sum(
+        1 + torch.log(var) + math.log(2 * math.pi), dim=1
+    )  # see VaDE paper # log q(z|x)
+    lqc_x = torch.sum(gamma * (lgamma), dim=1)  # log q(c|x)
+
+    kld = -lpz_c - lpc + lqz_x + lqc_x
+
     return kld
+
 
 def pdist(sample_1, sample_2, eps=1e-5):
     """Compute the matrix of all squared pairwise distances. Code
@@ -191,10 +227,11 @@ def pdist(sample_1, sample_2, eps=1e-5):
     B, n_1, n_2 = sample_1.size(0), sample_1.size(1), sample_2.size(1)
     norms_1 = torch.sum(sample_1 ** 2, dim=-1, keepdim=True)
     norms_2 = torch.sum(sample_2 ** 2, dim=-1, keepdim=True)
-    norms = (norms_1.expand(B, n_1, n_2)
-             + norms_2.transpose(1, 2).expand(B, n_1, n_2))
+    norms = norms_1.expand(B, n_1, n_2) + norms_2.transpose(1, 2).expand(B, n_1, n_2)
     distances_squared = norms - 2 * sample_1.matmul(sample_2.transpose(1, 2))
-    return torch.sqrt(eps + torch.abs(distances_squared)).squeeze()  # batch x K x latent
+    return torch.sqrt(
+        eps + torch.abs(distances_squared)
+    ).squeeze()  # batch x K x latent
 
 
 def NN_lookup(emb_h, emb, data):
@@ -224,10 +261,12 @@ class FakeCategorical(dist.Distribution):
 
     def log_prob(self, value):
         # value of shape (K, B, D)
-        lpx_z = -F.cross_entropy(input=self.logits.view(-1, self.logits.size(-1)),
-                                 target=value.expand(self.logits.size()[:-1]).long().view(-1),
-                                 reduction='none',
-                                 ignore_index=0)
+        lpx_z = -F.cross_entropy(
+            input=self.logits.view(-1, self.logits.size(-1)),
+            target=value.expand(self.logits.size()[:-1]).long().view(-1),
+            reduction="none",
+            ignore_index=0,
+        )
 
         return lpx_z.view(*self.logits.shape[:-1])
         # it is inevitable to have the word embedding dimension summed up in
@@ -236,18 +275,20 @@ class FakeCategorical(dist.Distribution):
         # in objective.
 
 
-#from github Bjarten/early-stopping-pytorch
+# from github Bjarten/early-stopping-pytorch
 import numpy as np
 import torch
 
+
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
+
     def __init__(self, patience=7, verbose=False, delta=0):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
                             Default: 7
-            verbose (bool): If True, prints a message for each validation loss improvement. 
+            verbose (bool): If True, prints a message for each validation loss improvement.
                             Default: False
             delta (float): Minimum change in the monitored quantity to qualify as an improvement.
                             Default: 0
@@ -269,31 +310,34 @@ class EarlyStopping:
             self.save_checkpoint(val_loss, model, runPath)
         elif score < self.best_score + self.delta:
             self.counter += 1
-            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
             if self.counter >= self.patience:
                 self.early_stop = True
         else:
             self.best_score = score
-            self.save_checkpoint(val_loss, model, runPath) #runPath追加
+            self.save_checkpoint(val_loss, model, runPath)  # runPath追加
             self.counter = 0
 
     def save_checkpoint(self, val_loss, model, runPath):
-        '''Saves model when validation loss decrease.'''
+        """Saves model when validation loss decrease."""
         if self.verbose:
-            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        #torch.save(model.state_dict(), 'checkpoint.pt')
-        save_model(model, runPath + '/model.rar') #mmvaeより移植
+            print(
+                f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
+            )
+        # torch.save(model.state_dict(), 'checkpoint.pt')
+        save_model(model, runPath + "/model.rar")  # mmvaeより移植
         self.val_loss_min = val_loss
 
 
 class EarlyStopping_nosave:
     """Early stops the training if validation loss doesn't improve after a given patience."""
+
     def __init__(self, patience=7, verbose=False, delta=0):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
                             Default: 7
-            verbose (bool): If True, prints a message for each validation loss improvement. 
+            verbose (bool): If True, prints a message for each validation loss improvement.
                             Default: False
             delta (float): Minimum change in the monitored quantity to qualify as an improvement.
                             Default: 0
@@ -301,7 +345,7 @@ class EarlyStopping_nosave:
         self.patience = patience
         self.verbose = verbose
         self.counter = 0
-        self.best_score =  -1e9
+        self.best_score = -1e9
         self.early_stop = False
         self.val_loss_min = np.Inf
         self.delta = delta
@@ -314,10 +358,9 @@ class EarlyStopping_nosave:
             self.best_score = score
         elif score < self.best_score + self.delta:
             self.counter += 1
-            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
             if self.counter >= self.patience:
                 self.early_stop = True
         else:
             self.best_score = score
             self.counter = 0
-    
