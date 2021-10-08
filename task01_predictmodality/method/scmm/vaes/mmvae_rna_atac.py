@@ -25,7 +25,7 @@ import pandas as pd
 from scipy.io import mmwrite, mmread
 from scipy.sparse import csr_matrix
 
-from vis import plot_embeddings, plot_kls_df, embed_umap
+from .vis import plot_embeddings, plot_kls_df, embed_umap
 from .mmvae import MMVAE
 from .vae_rna import RNA
 from .vae_atac import ATAC

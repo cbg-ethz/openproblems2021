@@ -3,8 +3,8 @@
 import torch
 import torch.nn as nn
 
-from utils import get_mean, kl_divergence
-from vis import embed_umap, tensors_to_df
+from .utils import get_mean, kl_divergence
+from .vis import embed_umap, tensors_to_df
 
 
 class VAE(nn.Module):
