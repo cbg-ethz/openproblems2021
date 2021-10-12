@@ -9,8 +9,8 @@ def main(
     input_train_mod1, input_train_mod2, input_test_mod1, input_train
 ):  # TODO: Why these args?
     logging.info("Training scMM...")
-    model = scMM(mod1="RNA", mod2="ATAC")
-    model.fit([input_train_mod1.X, input_train_mod2.X])
+    model = scMM()
+    model.fit(input_train_mod1, input_train_mod2)  # for now, RNA and ATAC
 
     logging.info("Predicting modality 2 from given modality 1 with scMM...")
     y_pred = model.predict_mod(mod1=input_test_mod1.X)
