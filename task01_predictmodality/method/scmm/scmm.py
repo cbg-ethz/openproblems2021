@@ -39,7 +39,7 @@ class scMM:
         self.epochs = epochs
         self.device = device
         self.deterministic_warmup = deterministic_warmup
-        self.print_freq = 1
+        self.print_freq = 0
 
     def fit(self, anndata_rna, anndata_atac):
         # setup model parameters
@@ -69,23 +69,33 @@ class scMM:
         )
 
         # get crackin'
+        stats = []
         with Timer("MM-VAE") as t:
-            agg = defaultdict(list)
             # initialize the early_stopping object
             early_stopping = EarlyStopping(patience=10, verbose=True)
             W = self.deterministic_warmup
             start_early_stop = W
             for epoch in range(1, self.epochs + 1):
-                b_loss = self.train(data_loader, epoch, agg, W)
-                if torch.isnan(torch.tensor([b_loss])):
+                stats.append({})
+
+                train_loss = self.train(data_loader, epoch, W)
+                stats[-1]["train_loss"] = train_loss
+
+                if torch.isnan(torch.tensor([train_loss])):
                     break
 
+                print(
+                    "====> Epoch: {:03d} Train loss: {:.4f}".format(epoch, train_loss)
+                )
+
                 # TODO: actually handle test data
-                # test(epoch, agg, W)
+                # test(epoch, W)
+                test_loss = train_loss / len(data_loader.dataset)
+                stats[-1]["test_loss"] = test_loss
 
                 if epoch > start_early_stop:
                     early_stopping(
-                        agg["test_loss"][-1],
+                        test_loss,
                         self.model,
                         "thisisjustsomedummypathisetbecauseiwastoolazytochangetheimplementation",
                     )
@@ -93,7 +103,7 @@ class scMM:
                     print("Early stopping")
                     break
 
-    def train(self, train_loader, epoch, agg, W):
+    def train(self, train_loader, epoch, W):
         self.model.train()
         b_loss = 0
         for i, dataT in enumerate(train_loader):
@@ -112,12 +122,7 @@ class scMM:
                         i, loss.item() / self.batch_size
                     )
                 )
-        agg["train_loss"].append(b_loss / len(train_loader.dataset))
-        print(
-            "====> Epoch: {:03d} Train loss: {:.4f}".format(
-                epoch, agg["train_loss"][-1]
-            )
-        )
+
         return b_loss
 
     def predict_mod(self, mod1=None, mod2=None):
