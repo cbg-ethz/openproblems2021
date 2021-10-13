@@ -13,8 +13,6 @@ def main(
     model.fit(input_train_mod1, input_train_mod2)  # for now, RNA and ATAC
 
     logging.info("Predicting modality 2 from given modality 1 with scMM...")
-    y_pred = model.predict_mod(mod1=input_test_mod1.X)
+    y_pred = model.predict_mod2(input_test_mod1)
 
-    y_pred = csc_matrix(y_pred)
-
-    return y_pred
+    return csc_matrix(y_pred)

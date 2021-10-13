@@ -125,6 +125,13 @@ class scMM:
 
         return b_loss
 
-    def predict_mod(self, mod1=None, mod2=None):
-        # TODO: magic
-        pass
+    def predict_mod2(self, input_test_mod1):
+        # vaes[0]: RNA VAE
+        # vaes[1]: ATAC VAE
+
+        mod1_space = input_test_mod1.layers["counts"].toarray().astype(np.float32)
+        latent_space = self.model.vaes[0].enc(torch.tensor(mod1_space))
+        mod2_space = self.model.vaes[1].dec(latent_space[0])
+
+        # TODO: which element of triplet to use?
+        return mod2_space[2].detach().numpy()
