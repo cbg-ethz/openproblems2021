@@ -36,21 +36,12 @@ class VAE(nn.Module):
         # handle merging individual datasets appropriately in sub-class
         raise NotImplementedError
 
-    def forward(self, x, K=1):
+    def forward(self, x):
         self._qz_x_params = self.enc(x)
         qz_x = self.qz_x(*self._qz_x_params)
-        zs = qz_x.rsample(torch.Size([K]))
+        zs = qz_x.rsample()
         px_z = self.px_z(*self.dec(zs))
         return qz_x, px_z, zs
-
-    def generate(self, N, K):
-        self.eval()
-        with torch.no_grad():
-            pz = self.pz(*self.pz_params)
-            latents = pz.rsample(torch.Size([N]))
-            px_z = self.px_z(*self.dec(latents))
-            data = px_z.sample(torch.Size([K]))
-        return data.view(-1, *data.size()[3:])
 
     def reconstruct(self, data):
         self.eval()
@@ -61,10 +52,29 @@ class VAE(nn.Module):
             recon = get_mean(px_z)
         return recon
 
-    def analyse(self, data, K):
+    def reconstruct_sample(self, data):
         self.eval()
         with torch.no_grad():
-            qz_x, _, zs = self.forward(data, K=K)
+            qz_x = self.qz_x(*self.enc(data))
+            latents = qz_x.rsample()  # no dim expansion
+            px_z = self.px_z(*self.dec(latents))
+            recon = px_z.sample()
+        return recon
+
+    def latents(self, data, sampling=False):
+        self.eval()
+        with torch.no_grad():
+            qz_x = self.qz_x(*self.enc(data))
+            if not sampling:
+                lats = get_mean(qz_x)
+            else:
+                lats = qz_x.sample()
+        return lats
+
+    def analyse(self, data, K=1):
+        self.eval()
+        with torch.no_grad():
+            qz_x, _, zs = self.forward(data)
             pz = self.pz(*self.pz_params)
             zss = [
                 pz.sample(torch.Size([K, data.size(0)])).view(-1, pz.batch_shape[-1]),
