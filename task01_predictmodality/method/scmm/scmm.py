@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from collections import defaultdict
 
+import numpy as np
+
 import torch
 from torch import optim
 
@@ -57,8 +59,8 @@ class scMM:
         # prepare data
         data_loader = self.model.getDataLoaders(
             [
-                anndata_rna.layers["counts"].toarray(),
-                anndata_atac.layers["counts"].toarray(),
+                anndata_rna.layers["counts"].toarray().astype(np.float32),
+                anndata_atac.layers["counts"].toarray().astype(np.float32),
             ],
             batch_size=self.batch_size,
             shuffle=True,
