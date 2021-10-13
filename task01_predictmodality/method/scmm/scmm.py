@@ -56,7 +56,10 @@ class scMM:
 
         # prepare data
         data_loader = self.model.getDataLoaders(
-            [anndata_rna.X.toarray(), anndata_atac.X.toarray()],
+            [
+                anndata_rna.layers["counts"].toarray(),
+                anndata_atac.layers["counts"].toarray(),
+            ],
             batch_size=self.batch_size,
             shuffle=True,
             drop_last=True,
