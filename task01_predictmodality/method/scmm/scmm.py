@@ -8,7 +8,7 @@ from torch import optim
 
 from .vaes import VAE_rna_atac
 from .objectives import m_elbo_naive_warmup
-from .vaes.utils import Timer, EarlyStopping_nosave as EarlyStopping
+from .vaes.utils import get_mean, Timer, EarlyStopping_nosave as EarlyStopping
 
 
 @dataclass
@@ -126,12 +126,22 @@ class scMM:
         return b_loss
 
     def predict_mod2(self, input_test_mod1):
-        # vaes[0]: RNA VAE
-        # vaes[1]: ATAC VAE
-
+        # extract RNA data
         mod1_space = input_test_mod1.layers["counts"].toarray().astype(np.float32)
-        latent_space = self.model.vaes[0].enc(torch.tensor(mod1_space))
-        mod2_space = self.model.vaes[1].dec(latent_space[0])
 
-        # TODO: which element of triplet to use?
-        return mod2_space[2].detach().numpy()
+        # encode RNA data to get latent params (mu, b)
+        vae_rna = self.model.vaes[0]
+        params_rna = vae_rna.enc(torch.tensor(mod1_space))
+
+        # sample z_
+        qz_x = vae_rna.qz_x(*params_rna)
+        latent_space = qz_x.rsample()
+
+        # decode latent sample to generate ATAC data
+        vae_atac = self.model.vaes[1]
+        mod2_params = vae_atac.dec(latent_space)
+        mod2_space = vae_atac.px_z(*mod2_params)
+
+        recon = get_mean(mod2_space)
+
+        return recon.detach().numpy()
