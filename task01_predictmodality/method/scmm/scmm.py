@@ -69,17 +69,17 @@ class scMM:
         )
 
         # get crackin'
-        stats = []
+        self.fit_stats = []
         with Timer("MM-VAE") as t:
             # initialize the early_stopping object
             early_stopping = EarlyStopping(patience=10, verbose=True)
             W = self.deterministic_warmup
             start_early_stop = W
             for epoch in range(1, self.epochs + 1):
-                stats.append({})
+                self.fit_stats.append({})
 
                 train_loss = self.train(data_loader, epoch, W)
-                stats[-1]["train_loss"] = train_loss
+                self.fit_stats[-1]["train_loss"] = train_loss
 
                 if torch.isnan(torch.tensor([train_loss])):
                     break
@@ -91,7 +91,7 @@ class scMM:
                 # TODO: actually handle test data
                 # test(epoch, W)
                 test_loss = train_loss / len(data_loader.dataset)
-                stats[-1]["test_loss"] = test_loss
+                self.fit_stats[-1]["test_loss"] = test_loss
 
                 if epoch > start_early_stop:
                     early_stopping(
