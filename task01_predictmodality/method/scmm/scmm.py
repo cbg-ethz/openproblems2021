@@ -12,16 +12,16 @@ from .vaes.utils import Timer, EarlyStopping_nosave as EarlyStopping
 @dataclass
 class ModelParams:
     # VAE params
-    r_dim: int = 1
-    p_dim: int = 1
+    r_dim: int  # dimensionality of RNA data
+    p_dim: int  # dimensionality of ATAC data
 
-    latent_dim: int = 10
-    num_hidden_layers: int = 1
+    latent_dim: int = 10  # latent dimensionality
+    num_hidden_layers: int = 1  # number of hidden layers in enc and dec
 
-    r_hidden_dim: int = 100
-    p_hidden_dim: int = 20
+    r_hidden_dim: int = 100  # number of hidden units in enc/dec for RNA VAE
+    p_hidden_dim: int = 20  # number of hidden units in enc/dec for ATAC VAE
 
-    learn_prior: bool = True
+    learn_prior: bool = True  # whether to learn model prior parameters
     llik_scaling: float = 1  # setting this to 0 crashes because of missing properties
 
     # optim params
@@ -38,7 +38,12 @@ class scMM:
         self.device = device
         self.deterministic_warmup = deterministic_warmup
         self.print_freq = 1
-        self.params = ModelParams()
+
+    def fit(self, anndata_rna, anndata_atac):
+        # setup model parameters
+        self.params = ModelParams(
+            r_dim=anndata_rna.var.shape[0], p_dim=anndata_atac.var.shape[0]
+        )
 
         # instantiate model
         self.model = VAE_rna_atac(self.params).to(self.device)
@@ -49,7 +54,6 @@ class scMM:
             amsgrad=True,
         )
 
-    def fit(self, anndata_rna, anndata_atac):
         # prepare data
         data_loader = self.model.getDataLoaders(
             [anndata_rna.X.toarray(), anndata_atac.X.toarray()],
