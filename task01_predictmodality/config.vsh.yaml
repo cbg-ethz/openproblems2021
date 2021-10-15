@@ -54,6 +54,7 @@ functionality:
   resources:
     - type: python_script
       path: script.py
+    - path: method.zip
 
   # resources for unit testing your component
   tests:

@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# This code was added by us. It's a hack.
+echo ""
+echo "######################################################################"
+echo "##              Zipping the directory with the method code          ##"
+echo "######################################################################"
+
+rm -f method.zip
+zip -r method.zip method
+
+# The rest of the file comes from the competition organizers.
+
 set -e
 
 # change these parameters if need be

@@ -8,10 +8,22 @@
 #
 # https://viash.io/docs/creating_components/python/
 
+import os
+import sys
+import shutil
+from pathlib import Path
+
 import logging
 import anndata as ad
 
-from method import METHOD_ID, main as method
+
+def _get_method_dir(meta: dict) -> Path:
+    """Extract the right directory from `meta` and returns the path to it."""
+    resources_dir = Path(meta['resources_dir'])
+    method_zip = resources_dir / "method.zip"
+    extract_dir = resources_dir / "modules"
+    shutil.unpack_archive(method_zip, extract_dir)
+    return extract_dir
 
 
 logging.basicConfig(level=logging.INFO)
@@ -27,9 +39,18 @@ par = {
     "output": "output.h5ad",
     "n_pcs": 50,
 }
+meta = { 'resources_dir': '.' }
 ## VIASH END
 
-method_id = METHOD_ID
+
+try:  # When running script.py directly
+    import method
+except ModuleNotFoundError:  # When using Viash
+    path_to_method = str(_get_method_dir(meta))
+    sys.path.append(path_to_method)
+    import method
+
+method_id = method.METHOD_ID
 
 logging.info("Reading `h5ad` files...")
 input_train_mod1 = ad.read_h5ad(par["input_train_mod1"])
@@ -45,7 +66,7 @@ input_train = ad.concat(
     index_unique="-",
 )
 
-y_pred = method(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
+y_pred = method.main(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
 
 adata = ad.AnnData(
     X=y_pred,
