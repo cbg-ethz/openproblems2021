@@ -83,8 +83,18 @@ platforms:
       - type: python
         packages:
           - scikit-learn
+          - numpy
+          - scipy
+          - matplotlib
+          - seaborn
           - anndata
           - scanpy
+          - torch
+          - torchnet
+          - torchvision
+          - pyro-ppl
+          - numba  # Required for umap
+          - umap-learn
 
   # By specifying a 'nextflow', viash will also build a viash module
   # which uses the docker container built above to also be able to
