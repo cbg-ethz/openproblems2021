@@ -18,10 +18,10 @@ class ModelParams:
     p_dim: int  # dimensionality of ATAC data
 
     latent_dim: int = 10  # latent dimensionality
-    num_hidden_layers: int = 1  # number of hidden layers in enc and dec
+    num_hidden_layers: int = 3  # number of hidden layers in enc and dec
 
-    r_hidden_dim: int = 100  # number of hidden units in enc/dec for RNA VAE
-    p_hidden_dim: int = 20  # number of hidden units in enc/dec for ATAC VAE
+    r_hidden_dim: int = 500  # number of hidden units in enc/dec for RNA VAE
+    p_hidden_dim: int = 100  # number of hidden units in enc/dec for ATAC VAE
 
     learn_prior: bool = True  # whether to learn model prior parameters
     llik_scaling: float = 1  # setting this to 0 crashes because of missing properties
@@ -32,7 +32,7 @@ class ModelParams:
 
 class scMM:
     def __init__(
-        self, batch_size=100, epochs=10, deterministic_warmup=50, device="cpu"
+        self, batch_size=64, epochs=10, deterministic_warmup=50, device="cpu"
     ):
         # setup model parameters
         self.batch_size = batch_size
