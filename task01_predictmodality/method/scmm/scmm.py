@@ -31,9 +31,7 @@ class ModelParams:
 
 
 class scMM:
-    def __init__(
-        self, batch_size=64, epochs=10, deterministic_warmup=50, device="cpu"
-    ):
+    def __init__(self, batch_size=64, epochs=10, deterministic_warmup=50, device="cpu"):
         # setup model parameters
         self.batch_size = batch_size
         self.epochs = epochs

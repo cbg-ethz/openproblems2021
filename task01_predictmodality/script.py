@@ -28,8 +28,6 @@ import anndata as ad
 
 # logging.basicConfig(level=logging.INFO)
 
-logging.basicConfig(level=logging.INFO)
-
 ## VIASH START
 # Anything within this block will be removed by `viash` and will be
 # replaced with the parameters as specified in your config.vsh.yaml.
@@ -76,7 +74,7 @@ input_train = ad.concat(
     index_unique="-",
 )
 
-y_pred = method(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
+y_pred = method.main(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
 
 adata = ad.AnnData(
     X=y_pred,
