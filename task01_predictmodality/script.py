@@ -16,6 +16,7 @@ import sys
 import logging
 import anndata as ad
 
+
 # def _get_method_dir(meta: dict) -> Path:
 #     """Extract the right directory from `meta` and returns the path to it."""
 #     resources_dir = Path(meta['resources_dir'])
@@ -26,11 +27,11 @@ import anndata as ad
 
 # logging.basicConfig(level=logging.INFO)
 
+logging.basicConfig(level=logging.INFO)
+
 ## VIASH START
 # Anything within this block will be removed by `viash` and will be
 # replaced with the parameters as specified in your config.vsh.yaml.
-meta = { 'resources_dir': '.' }
-
 par = {
     "input_train_mod1": "sample_data/openproblems_bmmc_multiome_starter/openproblems_bmmc_multiome_starter.train_mod1.h5ad",
     "input_train_mod2": "sample_data/openproblems_bmmc_multiome_starter/openproblems_bmmc_multiome_starter.train_mod2.h5ad",
@@ -73,7 +74,7 @@ input_train = ad.concat(
     index_unique="-",
 )
 
-y_pred = method.main(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
+y_pred = method(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
 
 adata = ad.AnnData(
     X=y_pred,
