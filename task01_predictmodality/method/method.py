@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 from .scmm import scMM
 
+EPOCHS: int = 5  # The number of training epochs for scMM
+
 
 def summary_plots(model, input_train_mod1, input_train_mod2):
     # loss
@@ -32,7 +34,7 @@ def main(
     input_train_mod1, input_train_mod2, input_test_mod1, input_train
 ):  # TODO: Why these args?
     logging.info("Training scMM...")
-    model = scMM(epochs=100)
+    model = scMM(epochs=EPOCHS)
     model.fit(input_train_mod1, input_train_mod2)  # for now, RNA and ATAC
 
     logging.info("Predicting modality 2 from given modality 1 with scMM...")
@@ -42,3 +44,4 @@ def main(
     summary_plots(model, input_train_mod1, input_train_mod2)
 
     return csc_matrix(y_pred)
+
