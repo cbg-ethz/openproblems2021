@@ -10,6 +10,7 @@
 
 import os
 import sys
+
 # import shutil
 # from pathlib import Path
 
@@ -49,11 +50,12 @@ par = {
 #     sys.path.append(path_to_method)
 #     import method
 
-sys.path.append(meta['resources_dir'])
+sys.path.append(meta["resources_dir"])
 
 import zipimport
-importer = zipimport.zipimporter(meta['resources_dir'] + '/../../method.zip')
-method = importer.load_module('method')
+
+importer = zipimport.zipimporter(meta["resources_dir"] + "/../../method.zip")
+method = importer.load_module("method")
 
 logging.basicConfig(level=logging.INFO)
 

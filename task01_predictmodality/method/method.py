@@ -44,4 +44,3 @@ def main(
     summary_plots(model, input_train_mod1, input_train_mod2)
 
     return csc_matrix(y_pred)
-
