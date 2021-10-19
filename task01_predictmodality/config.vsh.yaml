@@ -59,7 +59,8 @@ functionality:
   tests:
     - type: python_script
       path: test.py
-    - path: sample_data
+    - type: file
+      path: sample_data
 
 # target platforms
 platforms:
