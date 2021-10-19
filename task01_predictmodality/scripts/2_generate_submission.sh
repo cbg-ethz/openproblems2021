@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# This code was added by us. It's a hack.
-echo ""
-echo "######################################################################"
-echo "##              Zipping the directory with the method code          ##"
-echo "######################################################################"
-
-rm -f method.zip
-zip -r method.zip method
-
-# The rest of the file comes from the competition organizers.
-
 set -e
 
 # change these parameters if need be
@@ -39,6 +28,18 @@ LATEST_RELEASE=`get_latest_release openproblems-bio/neurips2021_multimodal_viash
 
 # cd to root dir of starter kit
 cd `get_script_dir ${BASH_SOURCE[0]}`/..
+
+# This code was added by us. It's a hack.
+echo ""
+echo "######################################################################"
+echo "##              Zipping the directory with the method code          ##"
+echo "######################################################################"
+
+rm -f method.zip
+zip -r method.zip method
+
+# End of our code. The rest of the file comes from the competition organizers.
+
 
 # checking environment
 scripts/0_sys_checks.sh
