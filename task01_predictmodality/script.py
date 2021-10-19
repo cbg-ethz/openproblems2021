@@ -11,26 +11,16 @@
 import os
 import sys
 
-# import shutil
-# from pathlib import Path
-
 import logging
 import anndata as ad
 
 
-# def _get_method_dir(meta: dict) -> Path:
-#     """Extract the right directory from `meta` and returns the path to it."""
-#     resources_dir = Path(meta['resources_dir'])
-#     method_zip = resources_dir / "method.zip"
-#     extract_dir = resources_dir / "modules"
-#     shutil.unpack_archive(method_zip, extract_dir)
-#     return extract_dir
-
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 ## VIASH START
 # Anything within this block will be removed by `viash` and will be
 # replaced with the parameters as specified in your config.vsh.yaml.
+meta = { 'resources_dir': '.' }
 par = {
     "input_train_mod1": "sample_data/openproblems_bmmc_multiome_starter/openproblems_bmmc_multiome_starter.train_mod1.h5ad",
     "input_train_mod2": "sample_data/openproblems_bmmc_multiome_starter/openproblems_bmmc_multiome_starter.train_mod2.h5ad",
@@ -38,24 +28,15 @@ par = {
     "distance_method": "minkowski",
     "output": "output.h5ad",
     "n_pcs": 50,
+    "load_method_from_zip": False,
 }
 ## VIASH END
 
-# try:  # When running script.py directly
-#     import method
-# except ModuleNotFoundError:  # When using Viash
-#     path_to_method = str(_get_method_dir(meta))
-#     sys.path.append(path_to_method)
-#     import method
+if par["load_method_from_zip"]:
+    import zipimport
 
-sys.path.append(meta["resources_dir"])
-
-import zipimport
-
-importer = zipimport.zipimporter(meta["resources_dir"] + "/../../method.zip")
-method = importer.load_module("method")
-
-logging.basicConfig(level=logging.INFO)
+    importer = zipimport.zipimporter(meta["resources_dir"] + "/../../method.zip")
+    method = importer.load_module("method")
 
 
 method_id = method.METHOD_ID
