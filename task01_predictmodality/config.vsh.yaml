@@ -50,14 +50,17 @@ functionality:
       default: 50
       description: Number of components to use for dimensionality reduction.
     - name: "--load_method_from_zip"
-      type: "boolean_true"
-      description: "Whether the ZIP method should be used."
+      type: "boolean"
+      default: true
+      description: "Needed for viash."
       required: true
 
   # files your script needs
   resources:
     - type: python_script
       path: script.py
+    - type: file
+      path: method.zip
 
   # resources for unit testing your component
   tests:

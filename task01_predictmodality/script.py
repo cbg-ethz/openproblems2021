@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.INFO)
 ## VIASH START
 # Anything within this block will be removed by `viash` and will be
 # replaced with the parameters as specified in your config.vsh.yaml.
-meta = { 'resources_dir': '.' }
 par = {
     "input_train_mod1": "sample_data/openproblems_bmmc_multiome_starter/openproblems_bmmc_multiome_starter.train_mod1.h5ad",
     "input_train_mod2": "sample_data/openproblems_bmmc_multiome_starter/openproblems_bmmc_multiome_starter.train_mod2.h5ad",
@@ -33,10 +32,13 @@ par = {
 ## VIASH END
 
 if par["load_method_from_zip"]:
+    meta = { 'resources_dir': '.' }
     import zipimport
 
     importer = zipimport.zipimporter(meta["resources_dir"] + "/../../method.zip")
     method = importer.load_module("method")
+else:
+    import method
 
 
 method_id = method.METHOD_ID
