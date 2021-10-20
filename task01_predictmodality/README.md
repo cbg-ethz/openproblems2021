@@ -1,10 +1,41 @@
 # Predict Modality - Starter Kit for Python Users
 
+## Why there are two ways of running everything
+There are two ways to run the script:
+  1. use Viash (which implicitly builds a Docker image and stores different runs in different directories).
+  2. run as an ordinary Python script.
+
+Method 1. is important as it generates a submission, which is then marked by eval.ai (see the documentation below).
+Method 2. is important as it allows us to iterate quickly and experiment with different methods.  
+
+## Running the scripts
+To run the script using method 1., make sure the dependencies are installed (see the official information from the organizers. It needs Docker and Viash)
+and then run
+```
+./scripts/2_generate_submission.sh   # Type ./scripts/2<TAB> to use autocompletion.
+```
+
+To run the script using method 2., install the Python dependecies, as specified in `config.vsh.yaml`.
+**Caution!** Currently it does not specify any CUDA support. Check the pytorch installation guide, if you intend to use CUDA. 
+
+Then, you can simply run:
+```
+python script.py
+```
+
+## Adding new methods
+The `script.py` file should be left as is (it does some magic to make sure we can run it using both methods).
+If you intend to modify the method, see the `method` module.
+Every new method should be implemented as a submodule and we can easily substitute by a tiny modification of `method/__init__.py`.
+
+
+## Information from the organizers
+
 Full documentation for the competition, including much of the information here, can be found online 
 at [openproblems.bio/neurips_docs/](https://openproblems.bio/neurips_docs/). The documentation for 
 Viash is available at [viash.io/docs](https://viash.io/docs).
 ​
-## Getting Started
+### Getting Started
 ​
 Check the [Quickstart](https://openproblems.bio/neurips_docs/submission/quickstart/) to create and upload your first submission to EvalAI.
 ​
@@ -14,7 +45,7 @@ Check the following links for more information:
 - [Development process](https://openproblems.bio/neurips_docs/submission/development_process/)
 - [Submit to EvalAI](https://eval.ai/web/challenges/challenge-page/1111/submission)
 ​
-## Folder Structure
+### Folder Structure
 ​
 ```
 ├── LICENSE                                 # MIT License

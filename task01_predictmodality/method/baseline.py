@@ -1,3 +1,7 @@
+"""This is the baseline method provided by the organizers.
+
+To use it, instead of scMM, see __init__.py.
+"""
 import logging
 
 from scipy.sparse import csc_matrix

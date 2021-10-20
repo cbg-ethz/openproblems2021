@@ -1,17 +1,22 @@
+"""Main Python script. To change the method used see the `method` submodule.
+
+
+More documentation on using Viash:
+
+https://viash.io/docs/creating_components/python/
+"""
 # Dependencies:
 # pip: scikit-learn, anndata, scanpy
 #
 # Python starter kit for the NeurIPS 2021 Single-Cell Competition.
 # Parts with `TODO` are supposed to be changed by you.
 #
-# More documentation:
-#
-# https://viash.io/docs/creating_components/python/
 
 import logging
-import anndata as ad
+import os
+import sys
 
-from method import METHOD_ID, main as method
+import anndata as ad
 
 
 logging.basicConfig(level=logging.INFO)
@@ -26,10 +31,22 @@ par = {
     "distance_method": "minkowski",
     "output": "output.h5ad",
     "n_pcs": 50,
+    "load_method_from_zip": False,
 }
+meta = {"resources_dir": "."}
 ## VIASH END
 
-method_id = METHOD_ID
+if par["load_method_from_zip"]:
+    import zipimport
+
+    path_to_module = os.path.join(meta["resources_dir"], "method.zip")
+    importer = zipimport.zipimporter(path_to_module)
+    method = importer.load_module("method")
+else:
+    import method
+
+
+method_id = method.METHOD_ID
 
 logging.info("Reading `h5ad` files...")
 input_train_mod1 = ad.read_h5ad(par["input_train_mod1"])
@@ -45,7 +62,7 @@ input_train = ad.concat(
     index_unique="-",
 )
 
-y_pred = method(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
+y_pred = method.main(input_train_mod1, input_train_mod2, input_test_mod1, input_train)
 
 adata = ad.AnnData(
     X=y_pred,
