@@ -1,12 +1,17 @@
+"""Main Python script. To change the method used see the `method` submodule.
+
+
+More documentation on using Viash:
+
+https://viash.io/docs/creating_components/python/
+"""
 # Dependencies:
 # pip: scikit-learn, anndata, scanpy
 #
 # Python starter kit for the NeurIPS 2021 Single-Cell Competition.
 # Parts with `TODO` are supposed to be changed by you.
 #
-# More documentation:
-#
-# https://viash.io/docs/creating_components/python/
+
 import logging
 import os
 import sys
