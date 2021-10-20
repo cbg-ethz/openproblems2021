@@ -7,11 +7,10 @@
 # More documentation:
 #
 # https://viash.io/docs/creating_components/python/
-
+import logging
 import os
 import sys
 
-import logging
 import anndata as ad
 
 
@@ -29,13 +28,14 @@ par = {
     "n_pcs": 50,
     "load_method_from_zip": False,
 }
+meta = {"resources_dir": "."}
 ## VIASH END
 
 if par["load_method_from_zip"]:
-    meta = { 'resources_dir': '.' }
     import zipimport
 
-    importer = zipimport.zipimporter(meta["resources_dir"] + "/../../method.zip")
+    path_to_module = os.path.join(meta["resources_dir"], "method.zip")
+    importer = zipimport.zipimporter(path_to_module)
     method = importer.load_module("method")
 else:
     import method
